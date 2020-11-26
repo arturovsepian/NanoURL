@@ -1,0 +1,34 @@
+version: '3.5'
+
+services:
+    webserver1:
+      image: nanows:latest
+      container_name: nano-ws1
+      restart: always
+      networks:
+        backend:
+
+    webserver2:
+      image: nanows:latest
+      container_name: nano-ws2
+      restart: always
+      networks:
+        backend:
+
+    webserver3:
+      image: nanows:latest
+      container_name: nano-ws3
+      restart: always
+      networks:
+        backend:
+
+    webserver4:
+      image: nanows:latest
+      container_name: nano-ws4
+      restart: always
+      networks:
+        backend:
+
+networks:
+  backend:
+    driver: bridge

@@ -1,0 +1,70 @@
+version: '3.5'
+
+services:
+  cassandra1:
+      image: cassandra:latest
+      container_name: nano-cassandra1
+      environment:
+        - "HEAP_NEWSIZE=128M"
+        - "MAX_HEAP_SIZE=256M"
+        - "CLUSTER_NAME=nano-cluster"
+        - "CASSANDRA_DC=datacenter1"
+      restart: always
+      volumes:
+        - vol1:/var/lib/cassandra
+      networks:
+        backend:
+
+  cassandra2:
+      image: cassandra:latest
+      container_name: nano-cassandra2
+      environment:
+        - "HEAP_NEWSIZE=128M"
+        - "MAX_HEAP_SIZE=256M"
+        - "CLUSTER_NAME=nano-cluster"
+        - "CASSANDRA_DC=datacenter1"
+        - "SEEDS=nano-cassandra1"
+      restart: always
+      volumes:
+        - vol2:/var/lib/cassandra
+      networks:
+        backend:
+
+  cassandra3:
+      image: cassandra:latest
+      container_name: nano-cassandra3
+      environment:
+        - "HEAP_NEWSIZE=128M"
+        - "MAX_HEAP_SIZE=256M"
+        - "CLUSTER_NAME=nano-cluster"
+        - "CASSANDRA_DC=datacenter1"
+        - "SEEDS=nano-cassandra1"
+      restart: always
+      volumes:
+        - vol3:/var/lib/cassandra
+      networks:
+        backend:
+
+  memcached1:
+      image: memcached:latest
+      container_name: nano-memcached1
+      restart: always
+      networks:
+        backend:
+
+  memcached2:
+      image: memcached:latest
+      container_name: nano-memcached2
+      restart: always
+      networks:
+        backend:
+
+
+volumes:
+  vol1:
+  vol2:
+  vol3:
+
+networks:
+  backend:
+    driver: bridge
