@@ -22,11 +22,11 @@ How to set up:
 		sudo docker-compose -f cassandra.yml up -d  	
 	5. Build war file and copy it to docker folder  	
 	6. Create our web service image:  
-		sudo docker image build -t nanows -f /home/artur/nanourl/webservice.txt .  	
+		sudo docker image build -t nanows -f ./webservice.txt .  	
 	7. Start web servers:  
 		sudo docker-compose -f web.yml up -d  	
 	8. Create nginx with custom config and index.html:  
-		sudo docker image build -t nginxlb -f /home/artur/nanourl/nginx.txt .  	
+		sudo docker image build -t nginxlb -f ./nginx.txt .  	
 	9. Start nginx:  
 		sudo docker run --name nginxlb --rm -d --network docker_backend -p 80:80 nginxlb  
 
