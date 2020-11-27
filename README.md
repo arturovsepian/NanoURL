@@ -28,7 +28,7 @@ How to set up:
 	8. Create nginx with custom config and index.html:  
 		sudo docker image build -t nginxlb -f /home/artur/nanourl/nginx.txt .  	
 	9. Start nginx:  
-		sudo docker run --name nginxlb --rm -d --network nanourl_backend -p 80:80 nginxlb  
+		sudo docker run --name nginxlb --rm -d --network docker_backend -p 80:80 nginxlb  
 
 You should see the following result:  
 
