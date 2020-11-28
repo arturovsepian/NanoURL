@@ -3,6 +3,7 @@ Cassandra cluster + Memcached + Docker + Docker Compose + Spring Boot + REST + T
  * 2 Memcached instances
  * 4 containers running Tomcat
  * 1 Nginx
+
 Everything running on Docker on Ubuntu 20.04 LTS which runs on VirtualBox under Windows 10 on a laptop.  
 Nginx serves static content (index page with the form to create short URL) and does load balancing between 4 web server nodes. Only nginx port 80 is exposed to outside world.
 
