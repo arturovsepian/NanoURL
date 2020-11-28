@@ -1,5 +1,8 @@
 Cassandra cluster + Memcached + Docker + Docker Compose + Spring Boot + REST + Tomcat + Nginx = NanoURL (URL shortener like TinyURL)
- * 3 nodes in Cassandra cluster with replication and sharding
+
+![Imgur](https://i.imgur.com/SS259DK.png)
+
+* 3 nodes in Cassandra cluster with replication and sharding
  * 2 Memcached instances
  * 4 containers running Tomcat
  * 1 Nginx
