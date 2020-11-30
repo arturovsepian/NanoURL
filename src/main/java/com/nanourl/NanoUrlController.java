@@ -46,7 +46,7 @@ public class NanoUrlController {
 		String nanoUrl = base62Encode(r);
 		Optional<NanoUrl> data = nanoUrlRepository.findById(nanoUrl);
 		try {
-			while(data.isPresent() && !memcachedClient.add(nanoUrl, 0, longUrl, SerializationType.PROVIDER)) {
+			while(data.isPresent() || !memcachedClient.add(nanoUrl, 0, longUrl, SerializationType.PROVIDER)) {
 				r = ThreadLocalRandom.current().nextLong(range);
 				nanoUrl = base62Encode(r);
 				data = nanoUrlRepository.findById(nanoUrl);
