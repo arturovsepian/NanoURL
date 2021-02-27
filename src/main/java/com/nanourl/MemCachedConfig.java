@@ -32,14 +32,6 @@ public class MemCachedConfig extends AbstractSSMConfiguration {
 		return cf;
 	}
 
-	/*@Bean
-	public CacheManager cacheManager() throws Exception {
-		SSMCacheManager cacheManager = new SSMCacheManager();
-		Cache cache = this.defaultMemcachedClient().getObject();
-		cacheManager.setCaches(Arrays.asList(new SSMCache(cache, 0, true)));
-		return cacheManager;
-	}*/
-
 	@Bean
 	public Cache memcachedClient() throws Exception {
 		CacheFactory cf = this.defaultMemcachedClient();

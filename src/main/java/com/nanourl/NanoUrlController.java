@@ -1,6 +1,8 @@
 package com.nanourl;
 
-import java.util.Date;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
@@ -8,6 +10,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +35,17 @@ public class NanoUrlController {
 	private static final int len = 7;
 	private static final long range = (int) Math.pow(base, len);//3521614606208L
 	private static final char[] base62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-	String[] schemes = {"http","https"};
+	private static final String[] schemes = {"http","https"};
+	private static String indexHtml;
+	static {
+	    try {
+	    	File file = new ClassPathResource("static/index.html").getFile();
+			indexHtml = Files.readAllLines(file.toPath()).get(0);
+		} catch (IOException e) {
+			indexHtml = "<html><header>Nano URL</header><body><form action=\"./create_url/\" method=\"post\"><label for=\"longUrl\">Long URL:</label><input type=\"text\" id=\"longUrl\" name=\"longUrl\"><br><br><input type=\"submit\" value=\"create\"></form></body></html>\n";
+		}
+	}
+	
 	@Value("${nanourl.prefix}")
 	private String prefix;
 	
@@ -40,7 +53,7 @@ public class NanoUrlController {
 	public ResponseEntity<String> createNanoURL(String longUrl) {
 		UrlValidator urlValidator = new UrlValidator(schemes);
 		if(!urlValidator.isValid(longUrl)) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+			return ResponseEntity.badRequest().build();
 		}
 		long r = ThreadLocalRandom.current().nextLong(range);
 		String nanoUrl = base62Encode(r);
@@ -55,21 +68,26 @@ public class NanoUrlController {
 			// TODO log Error
 			return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).build();
 		}
-		nanoUrlRepository.save(new NanoUrl(nanoUrl, longUrl, new Date()));
-		return new ResponseEntity<>(new StringBuilder().append(prefix).append(nanoUrl).toString(), HttpStatus.OK);
+		nanoUrlRepository.save(new NanoUrl(nanoUrl, longUrl));
+		return ResponseEntity.ok().body(new StringBuilder().append(prefix).append(nanoUrl).toString());
+	}
+	
+	@GetMapping("/") 
+	public ResponseEntity<String> getIndex(String nanoUrl) {
+		return ResponseEntity.ok().body(indexHtml);
 	}
 	
 	@GetMapping("/{nanoURL}") 
 	public ResponseEntity<String> getUrl(@PathVariable("nanoURL") String nanoUrl) {
-		if(nanoUrl == null || nanoUrl.length() < len) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		if(nanoUrl.length() < len) return ResponseEntity.notFound().build();
 		if(nanoUrl.charAt(nanoUrl.length() - 1) == '/') nanoUrl =  nanoUrl.substring(0, nanoUrl.length() - 1);
-		if(nanoUrl.length() < len) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		if(nanoUrl.length() < len) return ResponseEntity.notFound().build();
 		String longUrl;
 		try {
 			longUrl = memcachedClient.get(nanoUrl, SerializationType.PROVIDER);
 			if(longUrl == null) {
 				Optional<NanoUrl> data = nanoUrlRepository.findById(nanoUrl);
-				if(data.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				if(data.isEmpty()) return ResponseEntity.notFound().build();
 				longUrl = data.get().getLongUrl();
 				memcachedClient.set(nanoUrl, 0, longUrl, SerializationType.PROVIDER);
 			}

@@ -1,9 +1,8 @@
 package com.nanourl.repository;
 
-import org.springframework.data.cassandra.repository.CassandraRepository;
-
 import com.nanourl.entity.NanoUrl;
+import com.oracle.nosql.spring.data.repository.NosqlRepository;
 
-public interface NanoUrlRepository extends CassandraRepository<NanoUrl, String> {
+public interface NanoUrlRepository extends NosqlRepository<NanoUrl, String> {
 
 }
