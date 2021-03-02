@@ -1,6 +1,9 @@
 package com.nanourl;
 
 import java.util.Date;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeoutException;
@@ -8,9 +11,12 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,10 +36,20 @@ public class NanoUrlController {
 	private Cache memcachedClient;
 	private static final int base = 62;
 	private static final int len = 7;
-	private static final long range = (int) Math.pow(base, len);//3521614606208L
+	private static final long range = (long) Math.pow(base, len);//3521614606208L
 	private static final char[] base62 = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
-	private static String[] schemes = {"http","https"};
-	private static String indexHtml = "<html><header>Nano URL</header><body><form action=\"./create_url/\" method=\"post\"><label for=\"longUrl\">Long URL:</label><input type=\"text\" id=\"longUrl\" name=\"longUrl\"><br><br><input type=\"submit\" value=\"create\"></form></body></html>\n";
+	private static final String[] schemes = {"http","https"};
+	private String indexHtml;
+    {
+    	try {
+	    	Resource resource = new ClassPathResource("static/index.html");
+	    	InputStream inputStream = resource.getInputStream();
+	    	indexHtml = new String(FileCopyUtils.copyToByteArray(inputStream), StandardCharsets.UTF_8);
+		} catch (IOException e) {
+			indexHtml = "ERROR";
+		}
+    }
+	
 	@Value("${nanourl.prefix}")
 	private String prefix;
 	
@@ -86,7 +102,7 @@ public class NanoUrlController {
 		return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, longUrl).build();
 	}
 	
-	private String base62Encode(long val) {
+	private static String base62Encode(long val) {
 		StringBuilder sb = new StringBuilder();
 	    while (val != 0) {
 	        sb.append(base62[(int) (val % base)]);
