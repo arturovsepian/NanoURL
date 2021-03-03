@@ -24,7 +24,7 @@ How to set up. I will list only some major steps skipping a lot of things like o
 	6. Update application.properties with your user/password and server details
 	7. Build jar file and copy it on you VMs
 	8. Start web servers:
-		java -DTNS_ADMIN=/home/ubuntu/nanourl/wallet_db1 -jar /usr/local/NanoURL-0.0.3-SNAPSHOT.jar
+		java -DTNS_ADMIN=<path to your ATP wallet> -jar /usr/local/NanoURL-0.0.3-SNAPSHOT.jar
 
 Now you can go to http(s)://your_vm_public_ip and check how it works.  
 
