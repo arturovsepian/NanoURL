@@ -1,56 +1,34 @@
-Cassandra cluster + Memcached + Docker + Docker Compose + Spring Boot + REST + Tomcat + Nginx = NanoURL (URL shortener like TinyURL)
+NanoURL (URL shortener like TinyURL) in Orcale Cloud free tier
 
-![Imgur](https://i.imgur.com/SS259DK.png)
+![Imgur](https://i.imgur.com/OHuXMvW.png)
 
-* 3 nodes in Cassandra cluster with replication and sharding
+ * DB - Oracle Autonomous Transaction Processing
  * 2 Memcached instances
- * 4 containers running Tomcat
+ * 2 Spring Boot applications on embedded Tomcat
  * 1 Nginx
 
-Everything running on Docker on Ubuntu 20.04 LTS which runs on VirtualBox under Windows 10 on a laptop.  
-Nginx serves static content (index page with the form to create short URL) and does load balancing between 4 web server nodes. Only nginx port 80 is exposed to outside world.
+Everything runs in Oracle Cloud using always free services (ATP DB and 2 compute VMs running Ubuntu).  
+Nginx serves static content (index page with the form to create short URL), does load balancing between 2 web server nodes and ssl termination.
+
+Deployment was done without containers to avoid any possible performance overhead since VMs have limited memory and CPU resources (only 1 Gb of RAM and 1/8 OCPU each). SQL DB (Oracle ATP) was chosen because free NoSQL DB was not available in my region.
 
 # Getting Started
   
-How to set up:  
+How to set up. I will list only some major steps skipping a lot of things like opening ports on your compute instances, setting up connection to ATP.
 
-	1. Install Docker and Docker Compose  	
-	2. Pull the following images:  		
-		REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE  		
-		nginx               latest              bc9a0695f571        46 hours ago        133MB  		
-		memcached           latest              08ea1a3256c4        2 days ago          82.4MB  		
-		cassandra           latest              f1469bc7ea02        7 days ago          405MB  		
-		tomcat              latest              e0bd8b34b4ea        7 days ago          649MB  		
-	3. cd to Docker folder which contains yaml files, docker files and some other files to build custom images  	
-	4. Start Cassandra and Memcached:  
-		sudo docker-compose -f cassandra.yml up -d  	
-	5. Build war file and copy it to docker folder  	
-	6. Create our web service image:  
-		sudo docker image build -t nanows -f ./webservice.txt .  	
-	7. Start web servers:  
-		sudo docker-compose -f web.yml up -d  	
-	8. Create nginx with custom config and index.html:  
-		sudo docker image build -t nginxlb -f ./nginx.txt .  	
-	9. Start nginx:  
-		sudo docker run --name nginxlb --rm -d --network docker_backend -p 80:80 nginxlb  
+	1. Get ATP DB
+	2. Create user and table(details can be found in db/user.sql and db/schema.sql)
+	3. Get 2 compute instances
+	4. Install java and memcached on both instances and nginx on one of them. You will need to reconfigure -l parameter for memcached to allow connections from both VMs (it is 127.0.0.1 by default, you can use your private ip address)
+	5. Configure nginx for LB (sample config is attached) and ssl if you want and add index.html
+	6. Update application.properties with your user/password and server details
+	7. Build jar file and copy it on you VMs
+	8. Start web servers:
+		java -DTNS_ADMIN=/home/ubuntu/nanourl/wallet_db1 -jar /usr/local/NanoURL-0.0.3-SNAPSHOT.jar
 
-You should see the following result:  
+Now you can go to http(s)://your_vm_public_ip and check how it works.  
 
-sudo docker ps  
-```
-  CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                                         NAMES  
-  ac3298b79295        nginxlb             "/docker-entrypoint.…"   19 seconds ago      Up 18 seconds       0.0.0.0:80->80/tcp                            nginxlb  
-  271c3dd26094        nanows:latest       "catalina.sh run"        2 minutes ago       Up 2 minutes        8080/tcp                                      nano-ws2  
-  f4edd675b927        nanows:latest       "catalina.sh run"        2 minutes ago       Up 2 minutes        8080/tcp                                      nano-ws4  
-  18002cc65788        nanows:latest       "catalina.sh run"        2 minutes ago       Up 2 minutes        8080/tcp                                      nano-ws1  
-  fed1bfafd3b0        nanows:latest       "catalina.sh run"        2 minutes ago       Up 2 minutes        8080/tcp                                      nano-ws3  
-  7f9ae5bf3398        cassandra:latest    "docker-entrypoint.s…"   6 minutes ago       Up 6 minutes        7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp   nano-cassandra1  
-  36e67179670c        memcached:latest    "docker-entrypoint.s…"   6 minutes ago       Up 6 minutes        11211/tcp                                     nano-memcached1  
-  ae49a328dc49        cassandra:latest    "docker-entrypoint.s…"   6 minutes ago       Up 6 minutes        7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp   nano-cassandra2  
-  381d9745d08b        cassandra:latest    "docker-entrypoint.s…"   6 minutes ago       Up 6 minutes        7000-7001/tcp, 7199/tcp, 9042/tcp, 9160/tcp   nano-cassandra3  
-  0c0d15e469d9        memcached:latest    "docker-entrypoint.s…"   6 minutes ago       Up 6 minutes        11211/tcp                                     nano-memcached2  
-```  
-Now you can go to http://localhost and check how it works.  
+Some performance tests. Without SSL/TLS it can handle around 500 redirects in case of cache hit and 300 in case of cache miss. With SSL/TLS CPU becomes a bottleneck for NGINX and it can only process about 100 requests.
 
 ### Reference Documentation
 For further reference, please consider the following sections:
@@ -59,7 +37,10 @@ For further reference, please consider the following sections:
 * [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.4.0/maven-plugin/reference/html/)
 * [Create an OCI image](https://docs.spring.io/spring-boot/docs/2.4.0/maven-plugin/reference/html/#build-image)
 * [Spring Web](https://docs.spring.io/spring-boot/docs/2.4.0/reference/htmlsingle/#boot-features-developing-web-applications)
-* [Spring Data for Apache Cassandra](https://docs.spring.io/spring-boot/docs/2.4.0/reference/htmlsingle/#boot-features-cassandra)
+* [Java Connectivity with Autonomous Database (ATP or ADW) using 19c and 18.3 JDBC](https://www.oracle.com/database/technologies/java-connectivity-to-atp.html)
+* [OCI: Security Rules](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securityrules.htm#stateful)
+* [OCI: Getting Started with Autonomous](https://blogs.oracle.com/oraclemagazine/getting-started-with-autonomous)
+* [OCI: Details of the Always Free Resources](https://docs.oracle.com/en-us/iaas/Content/FreeTier/resourceref.htm)
 
 ### Guides
 The following guides illustrate how to use some features concretely:

@@ -12,7 +12,6 @@ import com.google.code.ssm.providers.spymemcached.MemcacheClientFactoryImpl;
 import com.google.code.ssm.providers.spymemcached.SpymemcachedConfiguration;
 
 @Configuration
-//@EnableCaching
 public class MemCachedConfig extends AbstractSSMConfiguration {
 
 	@Value("${spring.data.memcached.servers:placeholder}")

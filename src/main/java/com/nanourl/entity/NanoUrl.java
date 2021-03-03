@@ -1,15 +1,15 @@
 package com.nanourl.entity;
 
-import com.oracle.nosql.spring.data.core.mapping.NosqlId;
-import com.oracle.nosql.spring.data.core.mapping.NosqlTable;
+import javax.persistence.*;
 
 import lombok.Data;
 
 @Data
-@NosqlTable
+@Entity
+@Table
 public class NanoUrl {
 
-	@NosqlId
+	@Id
 	private String shortUrl;
 	
 	private String longUrl;
@@ -17,6 +17,9 @@ public class NanoUrl {
 	public NanoUrl(String shortUrl, String longUrl) {
 		this.shortUrl = shortUrl;
 		this.longUrl = longUrl;
+	}
+	
+	public NanoUrl() {
 	}
 
 }

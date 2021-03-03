@@ -1,8 +1,9 @@
 package com.nanourl.repository;
 
-import com.nanourl.entity.NanoUrl;
-import com.oracle.nosql.spring.data.repository.NosqlRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface NanoUrlRepository extends NosqlRepository<NanoUrl, String> {
+import com.nanourl.entity.NanoUrl;
+
+public interface NanoUrlRepository extends JpaRepository<NanoUrl, String> {
 
 }
