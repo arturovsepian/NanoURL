@@ -28,7 +28,7 @@ How to set up. I will list only some major steps skipping a lot of things like o
 
 Now you can go to http(s)://your_vm_public_ip and check how it works.  
 
-Some performance tests. Without SSL/TLS it can handle around 500 redirects in case of cache hit and 300 in case of cache miss. With SSL/TLS CPU becomes a bottleneck for NGINX and it can only process about 100 requests.
+Some performance tests. Without SSL/TLS it can handle around 500 redirects in case of cache hit and 300 in case of cache miss. With SSL/TLS CPU becomes a bottleneck for NGINX and it can only process about 100 requests. Using Oracle Load Balancer with SSL termination 2 servers can handle around 300-400 redirects.
 
 ### Reference Documentation
 For further reference, please consider the following sections:
